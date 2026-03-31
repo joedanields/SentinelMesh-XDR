@@ -9,6 +9,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from api.routes.agents import router as agents_router
+from api.routes.alerts import router as alerts_router
+from api.routes.analyze import router as analyze_router
+from api.routes.incidents import router as incidents_router
+from api.routes.ingest import router as ingest_router
+from api.routes.simulate import router as simulate_router
 from config import get_settings
 from models.database import close_db, init_db
 from utils.exceptions import SentinelMeshException, sentinelmesh_exception_handler
@@ -185,3 +191,15 @@ async def root() -> dict:
         "redoc": f"{settings.api_prefix}/redoc",
         "health": f"{settings.api_prefix}/health",
     }
+
+
+# ---------------------------------------------------------------------------
+# Feature routers
+# ---------------------------------------------------------------------------
+
+app.include_router(ingest_router, prefix=settings.api_prefix)
+app.include_router(analyze_router, prefix=settings.api_prefix)
+app.include_router(alerts_router, prefix=settings.api_prefix)
+app.include_router(incidents_router, prefix=settings.api_prefix)
+app.include_router(simulate_router, prefix=settings.api_prefix)
+app.include_router(agents_router, prefix=settings.api_prefix)
