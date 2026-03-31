@@ -14,7 +14,10 @@ import structlog
 logger = structlog.get_logger(__name__)
 
 SESSION_TIMEOUT = timedelta(minutes=30)
-IMPOSSIBLE_TRAVEL_SPEED_KMH = 900  # faster than this = impossible travel
+# Speed threshold for impossible-travel detection.
+# Set below commercial aircraft cruising speed (~900 km/h) to catch realistic cases;
+# configurable via SessionTracker constructor.
+DEFAULT_IMPOSSIBLE_TRAVEL_SPEED_KMH = 700
 
 # Well-known GeoIP approximations for RFC-1918 ranges (internal = same location)
 PRIVATE_RANGES = [
@@ -83,8 +86,13 @@ class SessionTracker:
       - Abnormal event density (burst)
     """
 
-    def __init__(self, session_timeout: timedelta = SESSION_TIMEOUT) -> None:
+    def __init__(
+        self,
+        session_timeout: timedelta = SESSION_TIMEOUT,
+        impossible_travel_speed_kmh: float = DEFAULT_IMPOSSIBLE_TRAVEL_SPEED_KMH,
+    ) -> None:
         self.session_timeout = session_timeout
+        self.impossible_travel_speed_kmh = impossible_travel_speed_kmh
         self._active: Dict[str, Session] = {}   # key → Session
         self._closed: List[Session] = []
         self._log = logger.bind(component="SessionTracker")
@@ -208,8 +216,10 @@ class SessionTracker:
     def _check_impossible_travel(self, session: Session, event: Dict[str, Any]) -> None:
         """
         Check for impossible travel.
-        Uses simple country-code comparison if available in parsed_fields,
-        otherwise skips (no external GeoIP dep required).
+        Uses country-code comparison if available in parsed_fields; no external
+        GeoIP dependency required. Considers two events from different countries
+        within a time that would require exceeding `impossible_travel_speed_kmh`
+        to be impossible (average inter-country distance assumed ~1500 km).
         """
         parsed = event.get("parsed_fields") or {}
         country = parsed.get("geoip_country") or parsed.get("country_code")
@@ -222,7 +232,9 @@ class SessionTracker:
             last_ts = last.get("timestamp")
             if last_country and last_country != country and last_ts:
                 elapsed_hours = (session.end_time - last_ts).total_seconds() / 3600.0
-                if elapsed_hours < 2 and "impossible_travel" not in session.anomalies:
+                # Assume ~1500 km avg distance between countries as conservative estimate
+                min_hours_required = 1500.0 / self.impossible_travel_speed_kmh
+                if elapsed_hours < min_hours_required and "impossible_travel" not in session.anomalies:
                     session.anomalies.append("impossible_travel")
                     self._log.warning(
                         "impossible_travel",
@@ -230,6 +242,7 @@ class SessionTracker:
                         from_country=last_country,
                         to_country=country,
                         elapsed_hours=round(elapsed_hours, 2),
+                        min_hours_required=round(min_hours_required, 2),
                     )
 
         session.geo_locations.append({
