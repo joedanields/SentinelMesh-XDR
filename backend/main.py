@@ -147,7 +147,7 @@ async def health_check() -> dict:
         db_status = "healthy"
     except Exception as exc:
         logger.error("Database health check failed", error=str(exc))
-        db_status = "unhealthy" if not settings.debug else f"unhealthy: {exc}"
+        db_status = "unhealthy"
 
     # Redis probe (best-effort – Redis is optional)
     redis_status = "unknown"
@@ -160,7 +160,7 @@ async def health_check() -> dict:
         redis_status = "healthy"
     except Exception as exc:
         logger.warning("Redis health check failed", error=str(exc))
-        redis_status = "unavailable" if not settings.debug else f"unavailable: {exc}"
+        redis_status = "unavailable"
 
     uptime = round(time.time() - _startup_time, 2) if _startup_time else 0.0
     overall = "healthy" if db_status == "healthy" else "degraded"
