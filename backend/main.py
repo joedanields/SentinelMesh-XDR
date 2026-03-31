@@ -14,6 +14,7 @@ from api.routes.alerts import router as alerts_router
 from api.routes.analyze import router as analyze_router
 from api.routes.incidents import router as incidents_router
 from api.routes.ingest import router as ingest_router
+from api.routes.logs import router as logs_router
 from api.routes.simulate import router as simulate_router
 from config import get_settings
 from models.database import close_db, init_db
@@ -198,6 +199,7 @@ async def root() -> dict:
 # ---------------------------------------------------------------------------
 
 app.include_router(ingest_router, prefix=settings.api_prefix)
+app.include_router(logs_router, prefix=settings.api_prefix)
 app.include_router(analyze_router, prefix=settings.api_prefix)
 app.include_router(alerts_router, prefix=settings.api_prefix)
 app.include_router(incidents_router, prefix=settings.api_prefix)

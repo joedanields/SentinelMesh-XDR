@@ -1,0 +1,28 @@
+version: '3.9'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./sentinelmesh.db
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - API_PREFIX=/api/v1
+    volumes:
+      - ./backend:/app
+      - ./sample-data:/data/sample-data
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      - VITE_API_BASE=http://localhost:8000/api/v1
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"

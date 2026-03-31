@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2026-03-31T17:10:00Z",
+    "source": "syslog",
+    "source_type": "system",
+    "raw_log": "Failed password for invalid user admin from 185.220.101.34 port 51320 ssh2",
+    "severity": "warning",
+    "host": "web-prod-01",
+    "ip_address": "185.220.101.34",
+    "event_type": "ssh_login_failure"
+  },
+  {
+    "timestamp": "2026-03-31T17:10:10Z",
+    "source": "nginx",
+    "source_type": "application",
+    "raw_log": "203.0.113.17 - - [31/Mar/2026:17:10:10 +0000] \"GET /login.php?id=1' OR 1=1-- HTTP/1.1\" 500 1240",
+    "severity": "high",
+    "host": "web-prod-01",
+    "ip_address": "203.0.113.17",
+    "event_type": "sql_injection_attempt"
+  }
+]

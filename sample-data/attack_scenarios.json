@@ -1,0 +1,17 @@
+[
+  {
+    "name": "brute_force",
+    "description": "Repeated SSH failures followed by a successful login",
+    "expected_indicators": ["failed_auth_burst", "source_ip_repetition", "ssh_login_success_after_failures"]
+  },
+  {
+    "name": "sql_injection",
+    "description": "Injection payloads in web parameters",
+    "expected_indicators": ["union_select", "or_1_equals_1", "db_error_messages"]
+  },
+  {
+    "name": "full_apt_chain",
+    "description": "Recon, access, lateral movement, exfiltration",
+    "expected_indicators": ["port_scan", "credential_abuse", "lateral_movement", "data_exfiltration"]
+  }
+]
