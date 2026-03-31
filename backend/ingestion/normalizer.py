@@ -87,11 +87,17 @@ def _parse_timestamp(ts_str: str) -> str:
     if not ts_str:
         return datetime.now(timezone.utc).isoformat()
 
-    # Unix epoch
+    # Unix epoch – validate range (2000-01-01 to 2100-01-01) to avoid false matches
+    _EPOCH_MIN = 946684800   # 2000-01-01 UTC
+    _EPOCH_MAX = 4102444800  # 2100-01-01 UTC
     if re.fullmatch(r"\d{10}", ts_str):
-        return datetime.fromtimestamp(int(ts_str), tz=timezone.utc).isoformat()
+        epoch = int(ts_str)
+        if _EPOCH_MIN <= epoch <= _EPOCH_MAX:
+            return datetime.fromtimestamp(epoch, tz=timezone.utc).isoformat()
     if re.fullmatch(r"\d{13}", ts_str):
-        return datetime.fromtimestamp(int(ts_str) / 1000, tz=timezone.utc).isoformat()
+        epoch_ms = int(ts_str)
+        if _EPOCH_MIN * 1000 <= epoch_ms <= _EPOCH_MAX * 1000:
+            return datetime.fromtimestamp(epoch_ms / 1000, tz=timezone.utc).isoformat()
 
     for fmt in _TIMESTAMP_FORMATS:
         try:

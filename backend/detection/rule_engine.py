@@ -265,7 +265,9 @@ class StatisticalRule(_BaseRule):
         self.field = condition["field"]
         self.z_threshold = float(condition.get("z_threshold", 3.0))
         self.min_samples = int(condition.get("min_samples", 30))
-        self._samples: list[float] = []
+        # Use deque for O(1) removal from the left end
+        from collections import deque as _deque
+        self._samples: _deque[float] = _deque(maxlen=1000)
 
     def _get_field_value(self, log: dict[str, Any]) -> float | None:
         parts = self.field.split(".")
@@ -287,9 +289,7 @@ class StatisticalRule(_BaseRule):
                 return None
 
             self._samples.append(value)
-            # Keep rolling window of last 1000 samples
-            if len(self._samples) > 1000:
-                self._samples.pop(0)
+            # deque with maxlen=1000 handles eviction automatically
 
             if len(self._samples) < self.min_samples:
                 return None

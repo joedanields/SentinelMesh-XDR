@@ -102,7 +102,7 @@ class EventGenerator:
             "source": "nginx",
             "source_type": "application",
             "severity": severity,
-            "message": f'{ip} - - [{datetime.now().strftime("%d/%b/%Y:%H:%M:%S +0000")}] '
+            "message": f'{ip} - - [{datetime.now(timezone.utc).strftime("%d/%b/%Y:%H:%M:%S +0000")}] '
                        f'"{method} {path} HTTP/1.1" {status} {random.randint(200, 50000)}',
             "ip_address": ip,
             "event_type": "http_request",

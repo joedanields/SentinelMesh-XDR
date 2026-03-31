@@ -105,13 +105,21 @@ _MALICIOUS_IPS: list[dict[str, Any]] = [
     # 100+ entries via range expansion below
 ]
 
-# Expand to 100+ entries
-for _i in range(3, 80):
+# Expand to 100+ entries using TEST-NET ranges (RFC 5737) to avoid prod false positives
+# 192.0.2.0/24 (TEST-NET-1), 198.51.100.0/24 (TEST-NET-2), 203.0.113.0/24 (TEST-NET-3)
+for _i in range(3, 45):
     _MALICIOUS_IPS.append({
-        "ip": f"10.200.{_i}.1",
-        "category": "internal_scanner" if _i % 2 == 0 else "suspicious",
+        "ip": f"192.0.2.{_i}",
+        "category": "test_scanner" if _i % 2 == 0 else "test_suspicious",
         "score": 55 + (_i % 30),
-        "desc": f"Suspicious internal host group {_i}",
+        "desc": f"Sample threat intelligence entry {_i} (TEST-NET-1)",
+    })
+for _i in range(0, 36):
+    _MALICIOUS_IPS.append({
+        "ip": f"198.51.100.{_i}",
+        "category": "test_c2",
+        "score": 60 + (_i % 25),
+        "desc": f"Sample threat intelligence entry {_i} (TEST-NET-2)",
     })
 
 _MALICIOUS_DOMAINS: list[dict[str, Any]] = [

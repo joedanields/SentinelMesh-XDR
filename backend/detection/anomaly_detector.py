@@ -155,11 +155,15 @@ class AnomalyDetector:
         min_train_samples: int = 100,
         retrain_interval: int = 500,     # retrain global model every N new samples
         profile_keys: list[str] | None = None,
+        n_estimators: int = 100,
+        random_state: int = 42,
     ) -> None:
         self.contamination = contamination
         self.min_train_samples = min_train_samples
         self.retrain_interval = retrain_interval
         self.profile_keys = profile_keys or ["host", "source", "user"]
+        self.n_estimators = n_estimators
+        self.random_state = random_state
 
         self._global_samples: deque[np.ndarray] = deque(maxlen=10_000)
         self._model: IsolationForest | None = None
@@ -258,8 +262,8 @@ class AnomalyDetector:
             X_scaled = self._scaler.transform(X)
             self._model = IsolationForest(
                 contamination=self.contamination,
-                n_estimators=100,
-                random_state=42,
+                n_estimators=self.n_estimators,
+                random_state=self.random_state,
                 n_jobs=-1,
             )
             self._model.fit(X_scaled)

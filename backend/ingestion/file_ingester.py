@@ -181,6 +181,7 @@ class FileIngester(AbstractIngester):
                 return  # nothing new
 
             self._checkpoint.inode_map[path_str] = current_inode
+            encoding_errors = 0
 
             async with aiofiles.open(path, "r", encoding="utf-8", errors="replace") as fh:
                 await fh.seek(prev_pos)
@@ -193,6 +194,9 @@ class FileIngester(AbstractIngester):
                         break
                     new_pos = await fh.tell()
                     line_number += 1
+                    # Track replacement characters as a proxy for encoding errors
+                    if "\ufffd" in line:
+                        encoding_errors += 1
                     stripped = line.rstrip("\n\r")
                     if not stripped:
                         continue
@@ -209,6 +213,13 @@ class FileIngester(AbstractIngester):
                         self._log.warning("queue full – dropping line", path=path_str)
                         self.metrics.record_error("queue full")
 
+                if encoding_errors:
+                    self._log.warning(
+                        "encoding errors detected in file",
+                        path=path_str,
+                        replacement_chars=encoding_errors,
+                        hint="file may not be UTF-8",
+                    )
                 self._checkpoint.positions[path_str] = new_pos
 
         except PermissionError:

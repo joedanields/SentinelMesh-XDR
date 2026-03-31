@@ -230,7 +230,16 @@ class APIIngester(AbstractIngester):
             rec["_source_hint"] = source_id
             rec["_source_type_hint"] = "webhook"
             if headers:
-                rec["_webhook_headers"] = {k: v for k, v in headers.items() if "token" not in k.lower()}
+                _SENSITIVE_HEADERS = frozenset({
+                    "authorization", "x-api-key", "x-auth-token", "cookie",
+                    "set-cookie", "token", "x-token", "api-key", "secret",
+                    "x-secret", "x-access-token", "x-session-token",
+                })
+                rec["_webhook_headers"] = {
+                    k: v for k, v in headers.items()
+                    if k.lower() not in _SENSITIVE_HEADERS
+                    and not any(s in k.lower() for s in ("token", "secret", "key", "auth", "password"))
+                }
             if not self._queue.full():
                 await self._queue.put(rec)
                 accepted += 1
