@@ -521,6 +521,7 @@ class RuleEngine:
     # ------------------------------------------------------------------
 
     def list_rules(self) -> list[dict[str, Any]]:
+        rules = sorted(self._rules.values(), key=lambda r: r.priority, reverse=True)
         return [
             {
                 "id": r.rule_id,
@@ -532,7 +533,7 @@ class RuleEngine:
                 "hit_count": r.hit_count,
                 "last_triggered": r.last_triggered,
             }
-            for r in self._sorted_rules
+            for r in rules
         ]
 
     def performance_stats(self) -> dict[str, Any]:

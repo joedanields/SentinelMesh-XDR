@@ -9,10 +9,16 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.agent_orchestrator import AgentOrchestrator
+from correlation.attack_chain_detector import AttackChainDetector
+from correlation.correlation_engine import CorrelationEngine
+from detection.anomaly_detector import AnomalyDetector
 from detection.rule_engine import RuleEngine
 from detection.threat_detector import ThreatDetector
+from detection.threat_intelligence import ThreatIntelligence
 from incident_response.alert_manager import AlertManager
 from incident_response.incident_manager import IncidentManager
+from memory.learning_engine import LearningEngine
+from memory.memory_store import MemoryStore
 from models.database import get_db
 from scoring.threat_scorer import ThreatScorer
 from simulation.simulation_engine import SimulationEngine
@@ -35,8 +41,22 @@ def get_rule_engine() -> RuleEngine:
 
 
 @lru_cache()
+def get_anomaly_detector() -> AnomalyDetector:
+    return AnomalyDetector()
+
+
+@lru_cache()
+def get_threat_intelligence() -> ThreatIntelligence:
+    return ThreatIntelligence()
+
+
+@lru_cache()
 def get_threat_detector() -> ThreatDetector:
-    return ThreatDetector(rule_engine=get_rule_engine())
+    return ThreatDetector(
+        rule_engine=get_rule_engine(),
+        anomaly_detector=get_anomaly_detector(),
+        threat_intelligence=get_threat_intelligence(),
+    )
 
 
 @lru_cache()
@@ -64,6 +84,26 @@ def get_threat_scorer() -> ThreatScorer:
     return ThreatScorer()
 
 
+@lru_cache()
+def get_memory_store() -> MemoryStore:
+    return MemoryStore()
+
+
+@lru_cache()
+def get_learning_engine() -> LearningEngine:
+    return LearningEngine()
+
+
+@lru_cache()
+def get_correlation_engine() -> CorrelationEngine:
+    return CorrelationEngine()
+
+
+@lru_cache()
+def get_attack_chain_detector() -> AttackChainDetector:
+    return AttackChainDetector()
+
+
 def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> dict:
     """Auth placeholder until full identity integration is completed."""
     if credentials is None:
@@ -72,4 +112,3 @@ def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return {"username": "analyst", "role": "analyst", "token": token}
-
