@@ -1,0 +1,12 @@
+{
+  "baseline": [
+    {"host": "web-prod-01", "event_type": "http_request", "count_per_min": 120},
+    {"host": "web-prod-01", "event_type": "failed_login", "count_per_min": 2},
+    {"host": "db-primary", "event_type": "query_exec", "count_per_min": 90}
+  ],
+  "anomalies": [
+    {"host": "web-prod-01", "event_type": "failed_login", "count_per_min": 95},
+    {"host": "db-primary", "event_type": "query_exec", "count_per_min": 400},
+    {"host": "auth-server", "event_type": "token_validation_error", "count_per_min": 210}
+  ]
+}
