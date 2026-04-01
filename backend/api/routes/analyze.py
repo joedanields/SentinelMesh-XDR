@@ -149,4 +149,4 @@ async def analyze_log(
         }
     except Exception as exc:  # noqa: BLE001
         logger.error("Analysis failed", error=str(exc))
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail="Analysis pipeline failed") from exc

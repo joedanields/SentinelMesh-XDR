@@ -68,8 +68,8 @@ async def create_rule(payload: RuleCreateRequest, engine: RuleEngine = Depends(g
                 "type": rule.__class__.__name__,
             },
         }
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=400, detail=f"Invalid rule: {exc}") from exc
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid rule definition: {type(exc).__name__}") from exc
 
 
 @router.post("/{rule_id}/enable")

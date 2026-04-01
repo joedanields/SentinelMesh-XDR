@@ -7,6 +7,7 @@ export const useAppStore = create((set, get) => ({
   alerts: [],
   incidents: [],
   insights: null,
+  rules: [],
   loading: false,
   error: null,
 
@@ -52,6 +53,79 @@ export const useAppStore = create((set, get) => ({
       set({ incidents: data.items || [] })
     } catch (err) {
       set({ error: `Failed fetching incidents: ${err.message}` })
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  async fetchRules() {
+    set({ loading: true, error: null })
+    try {
+      const res = await fetch(`${API_BASE}/rules`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      set({ rules: data.items || [] })
+      return data
+    } catch (err) {
+      set({ error: `Failed fetching rules: ${err.message}` })
+      throw err
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  async createRule(payload) {
+    set({ loading: true, error: null })
+    try {
+      const res = await fetch(`${API_BASE}/rules`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.detail || `HTTP ${res.status}`)
+      }
+      await get().fetchRules()
+      return await res.json()
+    } catch (err) {
+      set({ error: `Rule create failed: ${err.message}` })
+      throw err
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  async setRuleEnabled(ruleId, enabled) {
+    set({ loading: true, error: null })
+    try {
+      const endpoint = enabled ? 'enable' : 'disable'
+      const res = await fetch(`${API_BASE}/rules/${encodeURIComponent(ruleId)}/${endpoint}`, {
+        method: 'POST',
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await get().fetchRules()
+      return await res.json()
+    } catch (err) {
+      set({ error: `Rule update failed: ${err.message}` })
+      throw err
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  async deleteRule(ruleId) {
+    set({ loading: true, error: null })
+    try {
+      const res = await fetch(`${API_BASE}/rules/${encodeURIComponent(ruleId)}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await get().fetchRules()
+      return await res.json()
+    } catch (err) {
+      set({ error: `Rule delete failed: ${err.message}` })
+      throw err
     } finally {
       set({ loading: false })
     }

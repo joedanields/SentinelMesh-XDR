@@ -41,18 +41,20 @@ class RealtimeSimulateRequest(BaseModel):
 
 def _to_source_type(value: str | None) -> SourceType:
     val = (value or "").lower().strip()
-    if val in SourceType._value2member_map_:
+    try:
         return SourceType(val)
-    return SourceType.custom
+    except ValueError:
+        return SourceType.custom
 
 
 def _to_severity(value: str | None) -> LogSeverity:
     val = (value or "info").lower().strip()
-    if val in LogSeverity._value2member_map_:
+    try:
         return LogSeverity(val)
-    if val in {"medium", "low", "notice", "debug"}:
-        return LogSeverity.info
-    return LogSeverity.warning if val == "warn" else LogSeverity.info
+    except ValueError:
+        if val in {"medium", "low", "notice", "debug"}:
+            return LogSeverity.info
+        return LogSeverity.warning if val == "warn" else LogSeverity.info
 
 
 def _to_datetime(value: Any) -> datetime:
@@ -136,7 +138,7 @@ async def ingest_log(payload: IngestRequest, db: AsyncSession = Depends(get_db_s
         raise
     except Exception as exc:  # noqa: BLE001
         logger.error("Failed ingesting log", error=str(exc))
-        raise HTTPException(status_code=400, detail=f"Failed to ingest log: {exc}") from exc
+        raise HTTPException(status_code=400, detail="Failed to ingest log payload") from exc
 
 
 @router.post("/batch")
@@ -155,7 +157,8 @@ async def ingest_logs_batch(payload: BatchIngestRequest, db: AsyncSession = Depe
                 await db.flush()
                 accepted.append(row.id)
         except Exception as exc:  # noqa: BLE001
-            rejected.append({"index": index, "error": str(exc)})
+            logger.warning("batch ingest record rejected", index=index, error_type=type(exc).__name__)
+            rejected.append({"index": index, "error": "malformed_record", "error_type": type(exc).__name__})
 
     return {
         "accepted": len(accepted),
