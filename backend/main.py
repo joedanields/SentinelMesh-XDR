@@ -12,9 +12,13 @@ from fastapi.responses import JSONResponse
 from api.routes.agents import router as agents_router
 from api.routes.alerts import router as alerts_router
 from api.routes.analyze import router as analyze_router
+from api.routes.correlation import router as correlation_router
 from api.routes.incidents import router as incidents_router
 from api.routes.ingest import router as ingest_router
 from api.routes.logs import router as logs_router
+from api.routes.memory import router as memory_router
+from api.routes.monitoring import router as monitoring_router
+from api.routes.rules import router as rules_router
 from api.routes.simulate import router as simulate_router
 from config import get_settings
 from models.database import close_db, init_db
@@ -205,3 +209,7 @@ app.include_router(alerts_router, prefix=settings.api_prefix)
 app.include_router(incidents_router, prefix=settings.api_prefix)
 app.include_router(simulate_router, prefix=settings.api_prefix)
 app.include_router(agents_router, prefix=settings.api_prefix)
+app.include_router(rules_router, prefix=settings.api_prefix)
+app.include_router(memory_router, prefix=settings.api_prefix)
+app.include_router(correlation_router, prefix=settings.api_prefix)
+app.include_router(monitoring_router, prefix=settings.api_prefix)
