@@ -14,6 +14,7 @@ SentinelMesh-XDR/
 ├── backend/
 │   ├── api/                 # FastAPI routes + dependency wiring
 │   │   ├── routes/          # Feature endpoints (ingest, analyze, alerts, etc.)
+
 │   │   └── deps.py          # Singleton service providers
 │   ├── agents/              # AI/security agents and orchestrator
 │   ├── correlation/         # Event correlation and attack-chain logic
